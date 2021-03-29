@@ -7,17 +7,29 @@ public class Student extends User {
     private int age;
     //性别
     private String gender;
-    //班级
+    //班级编号，与数据库学生表对应，作用于数据库操作
+    private int class_id;
+    //班级名称，用于展示学生基本信息
     private String class_name;
     //专业
     private String major;
     //备注
     private String remakes;
 
+
     public Student(int userId, String password) {
         super(userId, password);
         //设置权限
-        this.setRights("Student");
+        this.setRights("学生");
+    }
+
+    public Student(int userId, String password, String stu_name, int age, String gender, int class_id, String remakes) {
+        super(userId, password);
+        this.setUserName(stu_name);
+        this.age = age;
+        this.gender = gender;
+        this.class_id = class_id;
+        this.remakes = remakes;
     }
 
     public String getMajor() {
@@ -41,12 +53,7 @@ public class Student extends User {
     }
 
     public void setRemakes(String remakes) {
-        //如果得到的备注为空，填写“无”
-        if (remakes.equals(null)) {
-            remakes = "无";
-        } else {
             this.remakes = remakes;
-        }
     }
 
     public int getAge() {
@@ -63,6 +70,14 @@ public class Student extends User {
 
     public void setGender(String gender) {
         this.gender = gender;
+    }
+
+    public int getClass_id() {
+        return class_id;
+    }
+
+    public void setClass_id(int class_id) {
+        this.class_id = class_id;
     }
 
     public void getAll(ArrayList<Object> stuInfo) {

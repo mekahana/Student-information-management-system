@@ -14,7 +14,12 @@ public class Main {
         //使用ArrayList<Object>展示学生所有基本信息
         ArrayList<Object> stuInfo = new ArrayList<>();
         student1.getAll(stuInfo);
-
-
+        //删除学生信息
+        dboperation.delete(202103);
+        //插入学生信息
+        Student student2 = new Student(202103, "202103", "钱老板", 22, "男", 101, "无");
+        dboperation.insert(student2);
+        //关闭数据库连接
+        dboperation.close();
     }
 }
