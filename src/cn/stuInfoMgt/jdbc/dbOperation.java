@@ -38,7 +38,7 @@ public class dbOperation {
         //查询专业
         try {
             //返回结果集
-            System.out.println("\n执行查询语句：" + sql_1);
+            System.out.println("\n信息查询中...");
             ResultSet rs_1 = stmt.executeQuery(sql_1);
             while (rs_1.next()) {
                 //直接调用学生对象的setUserName()方法
@@ -56,7 +56,6 @@ public class dbOperation {
                     "where class_id = '" + class_id + "')";
             //执行查询
             ResultSet rs_2 = stmt.executeQuery(sql_2);
-            System.out.println("执行查询语句：" + sql_2);
             while (rs_2.next()) {
                 student.setMajor(rs_2.getString("major_name"));
                 student.setClass_name(student.getMajor() + class_id + "班");
@@ -101,9 +100,10 @@ public class dbOperation {
         1.学号不能重复
         2.学生权限不能使用该方法
     * */
-    public void insert(Student student) {
+    public boolean insert(Student student) {
         //执行学号重复检查
         if (checkId(student.getUserId()) == false) {
+            //未检查到学号重复
             int stu_id = student.getUserId();
             String stu_name = student.getUserName();
             int age = student.getAge();
@@ -115,15 +115,22 @@ public class dbOperation {
                     "('" + stu_id + "', '" + stu_name + "', '" + age + "', '" + gender + "', '" + class_id + "', '" + remarks + "')";
             try {
                 //执行插入
-                System.out.println("执行插入语句：\n" + sql_1);
+                System.out.println("学生信息插入中...");
                 stmt.executeUpdate(sql_1);
                 System.out.println("学生信息插入成功！");
                 showTable("student");
+                return true;
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("插入学生信息失败！");
+                return false;
             }
+        } else {
+            //检查到学号重复
+            System.out.println("插入学生信息失败！");
+            return false;
         }
+
     }
 
     //方法功能：打印指定表中所有当前数据
@@ -164,8 +171,8 @@ public class dbOperation {
 
     }
 
-    //方法功能：删除指定学生信息
-    public void delete(int stu_id) {
+    //方法功能：按照学号删除指定学生信息
+    public boolean delete(int stu_id) {
         System.out.println("\n正在删除学号为" + stu_id + "的学生信息...");
         String sql_1 = "delete from student " +
                 "where stu_id = '" + stu_id + "'";
@@ -176,36 +183,31 @@ public class dbOperation {
                 //record不为0，表示正常删除
                 System.out.println("学生数据删除成功！");
                 showTable("student");
+                return true;
             } else {
                 //record为0，表示删除了个寂寞
                 System.out.println("删除操作失败，不存在该条记录！");
+                return false;
             }
 
         } catch (SQLException e) {
             e.printStackTrace();
             System.out.println("删除操作失败！");
+            return false;
         }
     }
 
     //方法功能：按照学号修改学生数据
     /*
-    警告：
-        1.不能修改学号，若要修改学号，步骤如下
-            a.新参数用于传递原本学号（对象中的数据已经先完成更新）
-                1）
-            b.查重，学号是主键，具有唯一标识
-            c.修改
-    备注：无
     注意：
         1.在一条UPDATE语句中，如果要更新多个字段，
             字段间不能使用“AND”，而应该用逗号分隔。
-
     思路：
         1.无论请求修改的内容是什么，直接对记录中的数据覆盖重写
         2.在可视化界面中修改数据，修改的是对应Student类中的属性，
             更新数据库直接将学生对象的全部数据更新至数据库即可
     * */
-    public void alert(Student student) {
+    public boolean alert(Student student) {
         //定义参数，用来传递学生对象中的数据至数据库
         int stu_id = student.getUserId();
         //学号副本存储原来学号，这样就支持了修改学号
@@ -229,18 +231,199 @@ public class dbOperation {
                     "class_id = '" + class_id + "'," +
                     "remarks = '" + remarks + "' " +
                     "where stu_id = '" + stu_id_copy + "'";
-            System.out.println("修改SQL语句为：" + sql_1);
             try {
                 stmt.executeUpdate(sql_1);
-                System.out.println("学生数据修改成功！");
+                System.out.println("学生信息修改成功！");
                 showTable("student");
+                return true;
             } catch (SQLException e) {
                 e.printStackTrace();
+                System.out.println("学生信息修改失败，数据库错误！");
+                return false;
             }
         } else {
-            System.out.println("重复的学号：" + stu_id + "，请重新修改录入的学号!");
+
+            System.out.println("学生信息修改失败！\n" +
+                    "重复的学号：" + stu_id + "，请重新修改录入的学号!");
+            return false;
         }
 
+    }
+
+    //方法功能：学生选专业
+    /*
+    备注：专业中有多门课程，且不存在课程同时属于多个专业
+    * */
+
+    //方法功能：学生选课course
+    /*
+    备注：
+        1.要先进行专业选择
+        2.只能选择本专业下的课程
+        3.
+    * */
+
+    //方法功能：教师打分
+    /*
+    备注：
+        1.一个老师带多个班
+        2.可视界面显示不同课程的班级学生名单，老师为其打分
+    * */
+
+    //方法功能：学生成绩查询
+    /*
+    注意：
+        1.注册账号需要查重
+        2.账号为各对象的userId
+        3.注册需要的参数：账号，密码，权限
+    * */
+
+    //方法功能：系统账号注册
+    /*
+    备注：
+        1.首先要进行账号重复检查
+        2.账号就是用户的id，即教师编号或学生学号，管理员除外
+    * */
+    public boolean registerAccount(int userId, String password, String rights) {
+        //首先进行账号重复检查
+        if (checkAccount(userId) == false) {
+            //不存在账号重复
+            try {
+                System.out.println("正在注册账号...");
+                String sql_1 = "insert into account(userId,password,rights)values('" + userId + "','" + password + "','" + rights + "')";
+                stmt.executeUpdate(sql_1);
+                System.out.println("账号注册成功，账号：" + userId + ",身份：" + rights);
+                return true;
+            } catch (Exception e1) {
+                e1.printStackTrace();
+                System.out.println("账号注册失败！");
+                return false;
+            }
+        } else {
+            System.out.println("账号注册失败，账号已存在！");
+            return false;
+        }
+    }
+
+    //方法功能：系统登陆
+    public boolean loginAccount(int userId, String password) {
+        String sql_1 = "select password from account " +
+                "where userId = '" + userId + "'";
+        try {
+            System.out.println("\n正在登陆...");
+            ResultSet rs_1 = stmt.executeQuery(sql_1);
+            //因为账号都是唯一的，所以这样用if而不是while
+            if (rs_1.next()) {
+                //查询到账号，核对密码
+                if (password.equals(rs_1.getString("password"))) {
+                    //密码匹配成功
+                    System.out.println("登陆成功！");
+                    return true;
+                } else {
+                    System.out.println("登陆失败，密码或账号错误！");
+                    return false;
+                }
+            } else {
+                //未查询到账号
+                System.out.println("登陆失败，账号不存在！");
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("登陆失败，未知错误！");
+            return false;
+        }
+
+    }
+
+    //方法功能：系统账号修改密码
+    /*
+    备注：暂无
+    * */
+    public boolean changePassword(int userId, String password, String new_password) {
+        //当查询到账号与密码与参数一致的记录时，修改密码
+        String sql_1 = "update account set " +
+                "password = '" + new_password + "' " +
+                "where userId = '" + userId + "' and " +
+                "password = '" + password + "'";
+        try {
+            System.out.println("\n密码修改中...");
+            int record = stmt.executeUpdate(sql_1);
+            if (record != 0) {
+                //数据更新成功
+                System.out.println("密码修改成功！");
+                return true;
+            } else {
+                System.out.println("原密码输入错误，密码修改失败！");
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("数据库出错，密码修改失败！");
+            return false;
+        }
+    }
+
+    //方法功能：系统账号删除
+    /*
+    警告：
+        1.管理员与普通用户看到的界面不同，但使用同一个功能
+        2.能否使用该方法是在可视化界面有限制的，但凡能在界面中使用该功能的即是合法的
+        3.具体限制在UI中设置
+    建议：
+        1.前三个参数可以直接用对象参数传入替代，然后加一个实时的确认密码
+    注意：
+        1.只有管理员拥有账号删除的权利（或者自己删除自己的账号）
+        2.账户与其他学生信息没有关系，即使账户删除，学生表、成绩表中的记录依旧存在
+        3.参数1和2是用于账号验证，参数4是删除的账号id，其中参数134是对象自动传入，参数2是临时确认的密码
+        4.如果是自己账号，删除后自动登出系统
+    * */
+    public boolean deleteAccount(int userId, String password, String rights, int targetAccount) {
+        //不需要查询账号是否是管理员账号，因为能实现这个功能是具有局面约束的
+        String sql_1 = "delete from account " +
+                "where userId = '" + targetAccount + "'";
+        try {
+            System.out.println("\n账号：" + targetAccount + "删除中...");
+            //结果最多只有一条记录，所以用if而不是while
+            int record = stmt.executeUpdate(sql_1);
+            if (record != 0) {
+                System.out.println("账户删除成功！");
+                return true;
+            } else {
+                System.out.println("账户删除失败，账户不存在！");
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("账户删除失败，数据库出错！");
+            return false;
+        }
+    }
+
+    //方法功能：账号重复检查
+    /*
+    备注：
+        1.用于账户注册时数据检查
+        2.存在重复为真，不存在为假
+    * */
+    public boolean checkAccount(int userId) {
+        String sql_1 = "select userId from account "
+                + "where userId = '" + userId + "'";
+        try {
+            //执行查询
+            System.out.println("\n执行账号重复检查...");
+            ResultSet rs_1 = stmt.executeQuery(sql_1);
+            if (rs_1.next()) {
+                System.out.println("检查到账号重复！");
+                return true;
+            }
+            System.out.println("未检查到账号重复！");
+            return false;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("账号重复检查失败！");
+            return true;
+        }
     }
 
     //方法功能：关闭数据库连接

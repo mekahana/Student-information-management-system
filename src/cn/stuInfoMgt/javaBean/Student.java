@@ -19,15 +19,15 @@ public class Student extends User {
     //stu_id_copy未设置setter方法，其值的改变在userId的setter方法中实现
     private int stu_id_copy;
 
-    public Student(int userId, String password) {
-        super(userId, password);
+    public Student(int userId) {
+        super(userId);
         //设置权限
         this.setRights("学生");
     }
 
     //对应数据库，学生表数据顺序
-    public Student(int userId, String password, String stu_name, int age, String gender, int class_id, String remakes) {
-        super(userId, password);
+    public Student(int userId, String stu_name, int age, String gender, int class_id, String remakes) {
+        super(userId);
         //对象初始化时保持学号副本与学号相同
         this.stu_id_copy = super.getUserId();
         this.setUserName(stu_name);

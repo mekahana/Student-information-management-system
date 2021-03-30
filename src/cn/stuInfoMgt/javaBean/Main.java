@@ -6,24 +6,46 @@ import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) {
-        Student student1 = new Student(202101, "202101");
+        Student student1 = new Student(202101);
         //创建数据库操作对象，其构造方法实现连接数据库功能
         dbOperation dboperation = new dbOperation();
+
         //参数1为查询的数据，参数2为学生对象
         dboperation.queryStu(student1.getUserId(), student1);
+
         //使用ArrayList<Object>展示学生所有基本信息
         ArrayList<Object> stuInfo = new ArrayList<>();
         student1.getAll(stuInfo);
-        //删除学生信息
+
+        //删除学生信息，返回值为boolean类型
         dboperation.delete(202103);
-        //插入学生信息
-        Student student2 = new Student(202103, "202103", "钱老板", 22, "男", 101, "无");
+        dboperation.delete(0);
+
+        //插入学生信息，返回值为boolean类型
+        Student student2 = new Student(202103, "钱老板", 22, "男", 101, "无");
         dboperation.insert(student2);
-        //修改学生信息
+
+        //修改学生信息，返回值为boolean类型
         student2.setUserName("钱天龙");
         student2.setUserId(202104);
         dboperation.alert(student2);
-        dboperation.delete(0);
+
+        //注册账户，返回值为boolean类型
+        dboperation.registerAccount(202101, "202101", "学生");
+        dboperation.registerAccount(001, "001", "管理员");
+
+        //登陆账户，返回值为boolean类型
+        dboperation.loginAccount(202101, "202101");
+
+        //修改账户密码，返回值为boolean类型
+        dboperation.changePassword(202101, "202101", "新密码202101");
+
+        //管理员删除账户
+        dboperation.deleteAccount(001, "001", "管理员", 202101);
+
+        //注册账户，返回值为boolean类型
+        dboperation.registerAccount(202101, "202101", "学生");
+
         //关闭数据库连接
         dboperation.close();
     }

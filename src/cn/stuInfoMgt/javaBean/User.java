@@ -10,9 +10,8 @@ public class User {
     //身份（权限）
     private String rights;
 
-    public User(int userId, String password) {
+    public User(int userId) {
         this.userId = userId;
-        this.password = password;
     }
 
     //增删改查
