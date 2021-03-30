@@ -15,7 +15,9 @@ public class Student extends User {
     private String major;
     //备注
     private String remakes;
-
+    //学号副本，用于在数据库中，根据原学号来修改学号
+    //stu_id_copy未设置setter方法，其值的改变在userId的setter方法中实现
+    private int stu_id_copy;
 
     public Student(int userId, String password) {
         super(userId, password);
@@ -23,13 +25,25 @@ public class Student extends User {
         this.setRights("学生");
     }
 
+    //对应数据库，学生表数据顺序
     public Student(int userId, String password, String stu_name, int age, String gender, int class_id, String remakes) {
         super(userId, password);
+        //对象初始化时保持学号副本与学号相同
+        this.stu_id_copy = super.getUserId();
         this.setUserName(stu_name);
         this.age = age;
         this.gender = gender;
         this.class_id = class_id;
         this.remakes = remakes;
+    }
+
+    //重写User类中getUserId方法
+    @Override
+    public void setUserId(int userId) {
+        //在每次对对象的学号进行更新时，将原有学号存储在副本中
+        stu_id_copy = this.getUserId();
+        System.out.println("副本数据：" + stu_id_copy + "已经存储！");
+        super.setUserId(userId);
     }
 
     public String getMajor() {
@@ -78,6 +92,10 @@ public class Student extends User {
 
     public void setClass_id(int class_id) {
         this.class_id = class_id;
+    }
+
+    public int getStu_id_copy() {
+        return stu_id_copy;
     }
 
     public void getAll(ArrayList<Object> stuInfo) {

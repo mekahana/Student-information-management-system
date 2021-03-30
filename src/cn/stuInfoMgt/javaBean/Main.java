@@ -19,6 +19,11 @@ public class Main {
         //插入学生信息
         Student student2 = new Student(202103, "202103", "钱老板", 22, "男", 101, "无");
         dboperation.insert(student2);
+        //修改学生信息
+        student2.setUserName("钱天龙");
+        student2.setUserId(202104);
+        dboperation.alert(student2);
+        dboperation.delete(0);
         //关闭数据库连接
         dboperation.close();
     }
