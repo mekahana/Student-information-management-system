@@ -13,7 +13,7 @@ public class dbOperation {
     private Connection conn;
     private Statement stmt;
 
-    //将myDBConn类的对象作为构造函数的参数
+    //在构造函数中创建myDBConn类对象
     public dbOperation() {
         //连接数据库
         myDBConn myDB = new myDBConn();
@@ -426,12 +426,13 @@ public class dbOperation {
         }
     }
 
-    //方法功能：关闭数据库连接
+    //方法功能：关闭数据库连接，释放资源
     public void close() {
         try {
+            System.out.println("\n正在释放资源...");
             stmt.close();
             conn.close();
-            System.out.println("\n数据库已关闭！");
+            System.out.println("资源释放完毕，数据库已关闭！");
         } catch (Exception e) {
             e.printStackTrace();
         }
