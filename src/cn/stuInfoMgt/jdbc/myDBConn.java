@@ -37,6 +37,7 @@ public class myDBConn {
             dbPassword = properties.getProperty("dbPassword");
             driverStr = properties.getProperty("driverStr");
             connStr = properties.getProperty("connStr");
+            //加载驱动，可以省略
             Class.forName(driverStr);
             System.out.println("驱动加载成功！");
         } catch (IOException e) {

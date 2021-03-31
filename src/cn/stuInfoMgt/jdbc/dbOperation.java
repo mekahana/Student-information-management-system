@@ -207,7 +207,7 @@ public class dbOperation {
         2.在可视化界面中修改数据，修改的是对应Student类中的属性，
             更新数据库直接将学生对象的全部数据更新至数据库即可
     * */
-    public boolean alert(Student student) {
+    public boolean update(Student student) {
         //定义参数，用来传递学生对象中的数据至数据库
         int stu_id = student.getUserId();
         //学号副本存储原来学号，这样就支持了修改学号
@@ -340,7 +340,7 @@ public class dbOperation {
     /*
     备注：暂无
     * */
-    public boolean changePassword(int userId, String password, String new_password) {
+    public boolean updatePassword(int userId, String password, String new_password) {
         //当查询到账号与密码与参数一致的记录时，修改密码
         String sql_1 = "update account set " +
                 "password = '" + new_password + "' " +

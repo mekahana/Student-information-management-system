@@ -28,7 +28,7 @@ public class Main {
         //修改学生信息，返回值为boolean类型
         student2.setUserName("钱天龙");
         student2.setUserId(202104);
-        dboperation.alert(student2);
+        dboperation.update(student2);
 
         //注册账户，返回值为boolean类型
         dboperation.registerAccount(202101, "202101", "学生");
@@ -38,7 +38,7 @@ public class Main {
         dboperation.loginAccount(202101, "202101");
 
         //修改账户密码，返回值为boolean类型
-        dboperation.changePassword(202101, "202101", "新密码202101");
+        dboperation.updatePassword(202101, "202101", "新密码202101");
 
         //管理员删除账户
         dboperation.deleteAccount(001, "001", "管理员", 202101);
