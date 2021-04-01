@@ -46,6 +46,8 @@ public class Main {
         //注册账户，返回值为boolean类型
         dboperation.registerAccount(202101, "202101", "学生");
 
+        //管理员创建专业测试，flag参数设置1为学院，2为专业
+        dboperation.insertCollegeOrMajor(3, "计算机科学与技术", 2);
         //关闭数据库连接
         dboperation.close();
     }

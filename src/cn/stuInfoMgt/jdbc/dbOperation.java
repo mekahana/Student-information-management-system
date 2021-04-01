@@ -67,32 +67,6 @@ public class dbOperation {
         }
     }
 
-    //方法功能：学号重复检查
-    /*
-    备注：
-        1.用于插入学生信息时的数据检查
-        2.存在重复为真，不存在为假
-    * */
-    public boolean checkId(int stu_id) {
-        String sql_1 = "select stu_id from student "
-                + "where stu_id = '" + stu_id + "'";
-        try {
-            //执行查询
-            System.out.println("\n执行学号重复检查...");
-            ResultSet rs_1 = stmt.executeQuery(sql_1);
-            if (rs_1.next()) {
-                System.out.println("检查到学号重复！");
-                return true;
-            }
-            System.out.println("未检查到学号重复！");
-            return false;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("学号重复检查失败！");
-            return true;
-        }
-    }
-
     //方法功能：插入学生信息
     /*
     备注：权限不需要传输，数据库中已经设置默认值
@@ -101,8 +75,9 @@ public class dbOperation {
         2.学生权限不能使用该方法
     * */
     public boolean insert(Student student) {
+        System.out.println("\n学生信息插入中...");
         //执行学号重复检查
-        if (checkId(student.getUserId()) == false) {
+        if (checkId(student.getUserId(), "student") == false) {
             //未检查到学号重复
             int stu_id = student.getUserId();
             String stu_name = student.getUserName();
@@ -115,7 +90,6 @@ public class dbOperation {
                     "('" + stu_id + "', '" + stu_name + "', '" + age + "', '" + gender + "', '" + class_id + "', '" + remarks + "')";
             try {
                 //执行插入
-                System.out.println("学生信息插入中...");
                 stmt.executeUpdate(sql_1);
                 System.out.println("学生信息插入成功！");
                 showTable("student");
@@ -208,12 +182,13 @@ public class dbOperation {
             更新数据库直接将学生对象的全部数据更新至数据库即可
     * */
     public boolean update(Student student) {
+        System.out.println("\n更新学生信息中...");
         //定义参数，用来传递学生对象中的数据至数据库
         int stu_id = student.getUserId();
         //学号副本存储原来学号，这样就支持了修改学号
         int stu_id_copy = student.getStu_id_copy();
         //如果学号和副本数据不同，则表示需要修改学号，则要对新学号进行学号查重检查
-        if ((stu_id != stu_id_copy && checkId(stu_id) == false)
+        if ((stu_id != stu_id_copy && checkId(stu_id, "student") == false)
                 || stu_id == stu_id_copy) {
             //需要修改学号且通过了学号重复检查
             //或者不需要修改学号
@@ -278,6 +253,101 @@ public class dbOperation {
         3.注册需要的参数：账号，密码，权限
     * */
 
+    //方法功能：管理员设置专业/学院
+
+    /**
+     * 备注：
+     * 1.只有管理员才可以设置专业
+     * 2.参数1为专业/学院代号，参数2为专业/学院名称，参数3：1为学院，2为专业
+     * 3.
+     */
+    public boolean insertCollegeOrMajor(int id, String name, int flag) {
+        String table_name = "college";
+        String sql_1 = "insert into college (college_id, college_name) " +
+                "values('" + id + "', '" + name + "')";
+        switch (flag) {
+            case 1:
+                //学院创建预设，使用预设的默认值
+                System.out.println("\n正在创建学院中...");
+                break;
+            case 2:
+                //专业创建，修改预设
+                System.out.println("\n正在创建专业中...");
+                sql_1 = "insert into major (major_id, major_name) " +
+                        "values('" + id + "', '" + name + "')";
+                table_name = "major";
+                break;
+            default:
+        }
+        //进行id重复检查
+        if (!checkId(id, table_name)) {
+            //不存在id重复
+            try {
+                int record = stmt.executeUpdate(sql_1);
+                if (record != 0) {
+                    System.out.println("创建成功！");
+                    return true;
+                } else {
+                    System.out.println("数据库未响应，创建失败！");
+                    return false;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                System.out.println("数据库出错，创建失败！");
+                return false;
+            }
+        } else {
+            //存在id重复，返回false插入专业失败
+            System.out.println("信息已存在，创建失败！");
+            return false;
+        }
+    }
+    //方法功能：id重复检查（用于创建、更新数据时的重复检查）
+
+    /**
+     * 备注：
+     * 1.支持专业id重复检查
+     * 2.支持学号重复检查
+     * 3.支持学院代号重复检查
+     * 4.支持账号重复检查
+     * 2.返回值真则存在重复，假则不存在重复
+     */
+    public boolean checkId(int id, String table_name) {
+        System.out.println("正在进行重复检查...");
+        String sql_1 = null;
+        //根据表名查询不同的表
+        if (table_name.equals("major")) {
+            //查询专业表
+            sql_1 = "select * from major " +
+                    "where major_id= '" + id + "'";
+        } else if (table_name.equals("college")) {
+            //查询学院表
+            sql_1 = "select * from college " +
+                    "where college_id= '" + id + "'";
+        } else if (table_name.equals("student")) {
+            //查询学生表
+            sql_1 = "select stu_id from student "
+                    + "where stu_id = '" + id + "'";
+        } else if (table_name.equals("account")) {
+            //查询账户表
+            sql_1 = "select userId from account "
+                    + "where userId = '" + id + "'";
+        }
+        try {
+            ResultSet rs = stmt.executeQuery(sql_1);
+            if (rs.next()) {
+                //存在重复
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    //方法功能：管理员设置专业下对应课程
     //方法功能：系统账号注册
     /*
     备注：
@@ -285,11 +355,11 @@ public class dbOperation {
         2.账号就是用户的id，即教师编号或学生学号，管理员除外
     * */
     public boolean registerAccount(int userId, String password, String rights) {
+        System.out.println("\n正在注册账号...");
         //首先进行账号重复检查
-        if (checkAccount(userId) == false) {
+        if (checkId(userId, "account") == false) {
             //不存在账号重复
             try {
-                System.out.println("正在注册账号...");
                 String sql_1 = "insert into account(userId,password,rights)values('" + userId + "','" + password + "','" + rights + "')";
                 stmt.executeUpdate(sql_1);
                 System.out.println("账号注册成功，账号：" + userId + ",身份：" + rights);
@@ -397,32 +467,6 @@ public class dbOperation {
             e.printStackTrace();
             System.out.println("账户删除失败，数据库出错！");
             return false;
-        }
-    }
-
-    //方法功能：账号重复检查
-    /*
-    备注：
-        1.用于账户注册时数据检查
-        2.存在重复为真，不存在为假
-    * */
-    public boolean checkAccount(int userId) {
-        String sql_1 = "select userId from account "
-                + "where userId = '" + userId + "'";
-        try {
-            //执行查询
-            System.out.println("\n执行账号重复检查...");
-            ResultSet rs_1 = stmt.executeQuery(sql_1);
-            if (rs_1.next()) {
-                System.out.println("检查到账号重复！");
-                return true;
-            }
-            System.out.println("未检查到账号重复！");
-            return false;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("账号重复检查失败！");
-            return true;
         }
     }
 
