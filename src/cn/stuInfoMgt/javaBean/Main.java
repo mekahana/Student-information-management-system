@@ -21,14 +21,7 @@ public class Main {
         dboperation.delete(202103);
         dboperation.delete(0);
 
-        //插入学生信息，返回值为boolean类型
-        Student student2 = new Student(202103, "钱老板", 22, "男", 101, "无");
-        dboperation.insert(student2);
 
-        //修改学生信息，返回值为boolean类型
-        student2.setUserName("钱天龙");
-        student2.setUserId(202104);
-        dboperation.update(student2);
 
         //注册账户，返回值为boolean类型
         dboperation.registerAccount(202101, "202101", "学生");
@@ -46,8 +39,24 @@ public class Main {
         //注册账户，返回值为boolean类型
         dboperation.registerAccount(202101, "202101", "学生");
 
-        //管理员创建专业测试，flag参数设置1为学院，2为专业
-        dboperation.insertCollegeOrMajor(3, "计算机科学与技术", 2);
+        //管理员创建学院
+        dboperation.insertCollege(1, "计算机与软件学院");
+
+        //创建专业
+        dboperation.insertMajor(1, "软件工程", "计算机与软件学院");
+
+        //创建班级
+        dboperation.insertClass(1, "软件工程");
+
+        //插入学生信息，返回值为boolean类型
+        Student student2 = new Student(202103, "钱老板", 22, "男", 1, "无");
+        dboperation.insert(student2);
+
+        //修改学生信息，返回值为boolean类型
+        student2.setUserName("钱天龙");
+        student2.setUserId(202104);
+        dboperation.update(student2);
+
         //关闭数据库连接
         dboperation.close();
     }

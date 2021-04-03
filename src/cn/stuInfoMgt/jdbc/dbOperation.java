@@ -73,11 +73,13 @@ public class dbOperation {
     注意：
         1.学号不能重复
         2.学生权限不能使用该方法
+
+    错误总结：要先对学生插入的信息进行检查（班级是否已经存在、学号是否重复）
     * */
     public boolean insert(Student student) {
         System.out.println("\n学生信息插入中...");
         //执行学号重复检查
-        if (checkId(student.getUserId(), "student") == false) {
+        if (!checkId(student.getUserId(), "student")) {
             //未检查到学号重复
             int stu_id = student.getUserId();
             String stu_name = student.getUserName();
@@ -85,18 +87,22 @@ public class dbOperation {
             String gender = student.getGender();
             int class_id = student.getClass_id();
             String remarks = student.getRemakes();
-            String sql_1 = "insert into student" +
-                    "(stu_id, stu_name, age, gender, class_id, remarks)values" +
-                    "('" + stu_id + "', '" + stu_name + "', '" + age + "', '" + gender + "', '" + class_id + "', '" + remarks + "')";
-            try {
-                //执行插入
-                stmt.executeUpdate(sql_1);
-                System.out.println("学生信息插入成功！");
-                showTable("student");
-                return true;
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("插入学生信息失败！");
+            //插入数据检查（班级必须存在）
+            if (checkId(class_id, "class")) {
+                //如果班级存在，这里借用了重复检查方法
+                String sql_2 = "insert into student" +
+                        "(stu_id, stu_name, age, gender, class_id, remarks)values" +
+                        "('" + stu_id + "', '" + stu_name + "', '" + age + "', '" + gender + "', '" + class_id + "', '" + remarks + "')";
+                if (commonInsertResult(sql_2)) {
+                    System.out.println("插入学生信息成功！");
+                    showTable("student");
+                    return true;
+                } else {
+                    System.out.println("插入学生信息失败！");
+                    return false;
+                }
+            } else {
+                System.out.println("插入学生信息失败，学生班级不存在，请检查学生信息！");
                 return false;
             }
         } else {
@@ -150,23 +156,14 @@ public class dbOperation {
         System.out.println("\n正在删除学号为" + stu_id + "的学生信息...");
         String sql_1 = "delete from student " +
                 "where stu_id = '" + stu_id + "'";
-        try {
-            //影响的行数
-            int record = stmt.executeUpdate(sql_1);
-            if (record != 0) {
-                //record不为0，表示正常删除
-                System.out.println("学生数据删除成功！");
-                showTable("student");
-                return true;
-            } else {
-                //record为0，表示删除了个寂寞
-                System.out.println("删除操作失败，不存在该条记录！");
-                return false;
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            System.out.println("删除操作失败！");
+        if (commonInsertResult(sql_1)) {
+            //操作成功
+            System.out.println("学生数据删除成功！");
+            showTable("student");
+            return true;
+        } else {
+            //操作失败
+            System.out.println("删除失败，学生信息不存在！");
             return false;
         }
     }
@@ -193,7 +190,6 @@ public class dbOperation {
             //需要修改学号且通过了学号重复检查
             //或者不需要修改学号
             String stu_name = student.getUserName();
-            System.out.println(stu_name);
             int age = student.getAge();
             String gender = student.getGender();
             int class_id = student.getClass_id();
@@ -206,23 +202,20 @@ public class dbOperation {
                     "class_id = '" + class_id + "'," +
                     "remarks = '" + remarks + "' " +
                     "where stu_id = '" + stu_id_copy + "'";
-            try {
-                stmt.executeUpdate(sql_1);
+            if (commonInsertResult(sql_1)) {
+                //数据更新成功
                 System.out.println("学生信息修改成功！");
                 showTable("student");
                 return true;
-            } catch (SQLException e) {
-                e.printStackTrace();
-                System.out.println("学生信息修改失败，数据库错误！");
+            } else {
+                System.out.println("学生信息修改失败，该学生不存在！");
                 return false;
             }
         } else {
-
             System.out.println("学生信息修改失败！\n" +
                     "重复的学号：" + stu_id + "，请重新修改录入的学号!");
             return false;
         }
-
     }
 
     //方法功能：学生选专业
@@ -248,60 +241,162 @@ public class dbOperation {
     //方法功能：学生成绩查询
     /*
     注意：
-        1.注册账号需要查重
+        1.查询成绩需要先登陆账号
         2.账号为各对象的userId
         3.注册需要的参数：账号，密码，权限
     * */
 
-    //方法功能：管理员设置专业/学院
+    //方法功能：创建学院
 
     /**
      * 备注：
-     * 1.只有管理员才可以设置专业
-     * 2.参数1为专业/学院代号，参数2为专业/学院名称，参数3：1为学院，2为专业
-     * 3.
+     * 1.只有管理员才可以设置学院
+     * 2.学院代号进行查重
      */
-    public boolean insertCollegeOrMajor(int id, String name, int flag) {
+    public boolean insertCollege(int college_id, String college_name) {
         String table_name = "college";
         String sql_1 = "insert into college (college_id, college_name) " +
-                "values('" + id + "', '" + name + "')";
-        switch (flag) {
-            case 1:
-                //学院创建预设，使用预设的默认值
-                System.out.println("\n正在创建学院中...");
-                break;
-            case 2:
-                //专业创建，修改预设
-                System.out.println("\n正在创建专业中...");
-                sql_1 = "insert into major (major_id, major_name) " +
-                        "values('" + id + "', '" + name + "')";
-                table_name = "major";
-                break;
-            default:
-        }
+                "values('" + college_id + "', '" + college_name + "')";
+        //学院创建预设，使用预设的默认值
+        System.out.println("\n正在创建学院中...");
         //进行id重复检查
-        if (!checkId(id, table_name)) {
+        if (!checkId(college_id, table_name)) {
             //不存在id重复
-            try {
-                int record = stmt.executeUpdate(sql_1);
-                if (record != 0) {
-                    System.out.println("创建成功！");
-                    return true;
-                } else {
-                    System.out.println("数据库未响应，创建失败！");
-                    return false;
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-                System.out.println("数据库出错，创建失败！");
-                return false;
-            }
+            if (commonInsertResult(sql_1)) return true;
+            else return false;
         } else {
             //存在id重复，返回false插入专业失败
             System.out.println("信息已存在，创建失败！");
             return false;
         }
     }
+
+    //方法功能：创建专业
+    /*
+     * 注意：
+     *   1.要先有学院才可以创建专业
+     *   2.要进行专业id查重
+     * 错误总结：变量college_id用来存放学院代号，因为学院代号是通过参数学院名称查询到的，所以变量初始化为0；
+     *               当定义了插入语句sql_2时，将college_id赋值进去，因为字符串是不能改变的，所以无论后面college_id的值如何改变，sql_2对应的字符串的值是永远不会再变的
+     * */
+    public boolean insertMajor(int major_id, String major_name, String college_name) {
+        System.out.println("\n正在创建专业表...");
+        String sql_1 = "select college_id from college " +
+                "where college_name = '" + college_name + "'";
+        int college_id = 0;
+        try {
+            ResultSet rs = stmt.executeQuery(sql_1);
+            if (rs.next()) {
+                //学院存在，获取学院id
+                college_id = rs.getInt("college_id");
+                //专业id重复检查
+                if (!checkId(major_id, "major")) {
+                    //不存在id重复，插入数据
+                    String sql_2 = "insert into major (major_id, major_name, college_id)" +
+                            "values('" + major_id + "', '" + major_name + "', '" + college_id + "')";
+                    System.out.println("正在插入数据：" + sql_2);
+                    if (commonInsertResult(sql_2)) return true;
+                    else return false;
+                } else {
+                    //存在重复
+                    System.out.println("信息已存在，创建失败！");
+                    return false;
+                }
+            } else {
+                System.out.println("专业插入失败，学院不存在，请先创建学院！");
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("数据库出错，专业创建失败！");
+            return false;
+        }
+    }
+
+    //方法功能：创建班级
+    /*
+     * 备注：
+     *   1.要先有对应专业才能创建班级
+     *   2.管理员才能创建班级
+     *   3.教师id可以为空，在本方法中暂不设置教师id
+     *   4.班级编号查重
+     *
+     * 错误总结：与创建专业同样的原因，字符串是不可改变的
+     * */
+    public boolean insertClass(int class_id, String major_name) {
+        System.out.println("\n正在创建班级...");
+        //设置班级名称
+        String class_name = major_name + class_id + "班";
+        int major_id = 0;
+        String sql_1 = "select major_id from major " +
+                "where major_name = '" + major_name + "'";
+        //班级id检查
+        if (!checkId(class_id, "class")) {
+            //不存在重复
+            try {
+                ResultSet rs = stmt.executeQuery(sql_1);
+                if (rs.next()) {
+                    //专业存在，获取major_id
+                    major_id = rs.getInt("major_id");
+                    //不存在重复，插入数据
+                    String sql_2 = "insert into class " +
+                            "(class_id, class_name, major_id)" +
+                            "values('" + class_id + "', '" + class_name + "', '" + major_id + "')";
+                    System.out.println(sql_2);
+                    if (commonInsertResult(sql_2)) {
+                        System.out.println("班级创建成功！");
+                        return true;
+                    } else {
+                        System.out.println("数据库出错，班级创建失败！");
+                        return false;
+                    }
+                } else {
+                    //专业不存在
+                    System.out.println("专业不存在，班级创建失败！");
+                    return false;
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                System.out.println("数据库出错，班级创建失败！");
+                return false;
+            }
+        } else {
+            //班级已经存在
+            System.out.println("班级已存在，创建失败！");
+            return false;
+        }
+    }
+
+
+    //方法功能：数据插入和结果处理
+    /*
+     * 备注：
+     * 1.支持专业id插入处理
+     * 2.支持学号插入处理
+     * 3.支持学院代号插入处理
+     * 4.支持账号插入处理
+     * 2.返回值真则存在重复，假则不存在重复
+     * */
+    public boolean commonInsertResult(String sql) {
+        try {
+            int record = stmt.executeUpdate(sql);
+            if (record != 0) {
+                System.out.println("操作成功！");
+                return true;
+            } else {
+                System.out.println("数据库未响应，操作失败！");
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("数据库出错，创建失败！");
+            return false;
+        }
+    }
+
+
+    //方法功能：教师选课教授
+
     //方法功能：id重复检查（用于创建、更新数据时的重复检查）
 
     /**
@@ -312,26 +407,37 @@ public class dbOperation {
      * 4.支持账号重复检查
      * 2.返回值真则存在重复，假则不存在重复
      */
-    public boolean checkId(int id, String table_name) {
+    private boolean checkId(int id, String table_name) {
         System.out.println("正在进行重复检查...");
         String sql_1 = null;
         //根据表名查询不同的表
         if (table_name.equals("major")) {
             //查询专业表
-            sql_1 = "select * from major " +
+            sql_1 = "select major_id from major " +
                     "where major_id= '" + id + "'";
+            System.out.println("正在检查专业表：" + sql_1);
         } else if (table_name.equals("college")) {
             //查询学院表
-            sql_1 = "select * from college " +
+            sql_1 = "select college_id from college " +
                     "where college_id= '" + id + "'";
+            System.out.println("正在检查学院表：" + sql_1);
         } else if (table_name.equals("student")) {
             //查询学生表
             sql_1 = "select stu_id from student "
                     + "where stu_id = '" + id + "'";
+            System.out.println("正在检查学生表：" + sql_1);
         } else if (table_name.equals("account")) {
             //查询账户表
             sql_1 = "select userId from account "
                     + "where userId = '" + id + "'";
+            System.out.println("正在检查账户表：" + sql_1);
+        } else if (table_name.equals("class")) {
+            sql_1 = "select class_id from class " +
+                    "where class_id = '" + id + "'";
+            System.out.println("正在检查课程表：" + sql_1);
+        } else {
+            System.out.println("不存在的表：" + table_name + "！");
+            return false;
         }
         try {
             ResultSet rs = stmt.executeQuery(sql_1);
@@ -348,6 +454,7 @@ public class dbOperation {
     }
 
     //方法功能：管理员设置专业下对应课程
+
     //方法功能：系统账号注册
     /*
     备注：
@@ -359,13 +466,11 @@ public class dbOperation {
         //首先进行账号重复检查
         if (checkId(userId, "account") == false) {
             //不存在账号重复
-            try {
-                String sql_1 = "insert into account(userId,password,rights)values('" + userId + "','" + password + "','" + rights + "')";
-                stmt.executeUpdate(sql_1);
+            String sql_1 = "insert into account(userId,password,rights)values('" + userId + "','" + password + "','" + rights + "')";
+            if (commonInsertResult(sql_1)) {
                 System.out.println("账号注册成功，账号：" + userId + ",身份：" + rights);
                 return true;
-            } catch (Exception e1) {
-                e1.printStackTrace();
+            } else {
                 System.out.println("账号注册失败！");
                 return false;
             }
