@@ -318,7 +318,7 @@ public class dbOperation {
      * 备注：
      *   1.要先有对应专业才能创建班级
      *   2.管理员才能创建班级
-     *   3.教师id可以为空，在本方法中暂不设置教师id
+     *   3.教师id可以为空，在本方法中暂不设置教师id（教师选择班级）
      *   4.班级编号查重
      *
      * 错误总结：与创建专业同样的原因，字符串是不可改变的
@@ -367,6 +367,94 @@ public class dbOperation {
         }
     }
 
+    //方法功能：管理员创建教师
+    /*
+     * 备注：权限检查
+     * */
+    public boolean insertTeacher(int teacher_id, String teacher_name, String rights) {
+        System.out.println("\n正在创建教师信息中...");
+        //权限检查
+        if (rights.equals("管理员")) {
+            //检查教师id是否重复
+            if (!checkId(teacher_id, "teacher")) {
+                //没有重复
+                String sql_1 = "insert into teacher " +
+                        "(teacher_id, teacher_name) " +
+                        "values('" + teacher_id + "', '" + teacher_name + "')";
+                if (commonInsertResult(sql_1)) {
+                    System.out.println("教师信息创建成功！");
+                    return true;
+                } else {
+                    System.out.println("数据库未响应，教师信息创建失败！");
+                    return false;
+                }
+
+            } else {
+                //存在重复
+                System.out.println("教师已存在，教师信息创建失败！");
+                return false;
+            }
+        } else {
+            System.out.println("权限不足");
+            return false;
+        }
+    }
+    //方法功能：管理员设置专业对应课程
+
+    /**
+     * 备注：
+     * 1.课程是否存在（重复检查）
+     * 2.专业是否存在（重复检查）
+     * 3.教师是否存在（重复检查）
+     * <p>
+     * 优化：
+     * 1.输入的参数应该将teacher_id替换为teacher_name
+     * 2.major_id替换为major_name
+     */
+    public boolean insertCourse(int course_id, String course_name, int teacher_id, int major_id, String rights) {
+        System.out.println("\n正在创建课程中...");
+        //权限检查
+        if (rights.equals("管理员")) {
+            //专业存在检查
+            if (checkId(major_id, "major")) {
+                //专业id输入正确，课程id重复检查
+                if (!checkId(course_id, "course")) {
+                    //课程id不存在重复，教师存在检查
+                    if (checkId(teacher_id, "teacher")) {
+                        //教师存在
+                        System.out.println("教师存在！");
+                        String sql_1 = "insert into course " +
+                                "(course_id, course_name, teacher_id, major_id) " +
+                                "values('" + course_id + "', '" + course_name + "', '" + teacher_id + "', '" + major_id + "')";
+                        if (commonInsertResult(sql_1)) {
+                            //数据插入成功
+                            System.out.println("课程创建成功！");
+                            return true;
+                        } else {
+                            System.out.println("数据库未响应，课程创建失败！");
+                            return false;
+                        }
+                    } else {
+                        //教师不存在
+                        System.out.println("教师不存在，课程创建失败！");
+                        return false;
+                    }
+                } else {
+                    //课程id存在重复
+                    System.out.println("课程号重复，课程创建失败！");
+                    return false;
+                }
+            } else {
+                //专业不存在
+                System.out.println("课程所属专业不存在，课程创建失败！");
+                return false;
+            }
+        } else {
+            System.out.println("权限不足，课程创建失败！");
+            return false;
+        }
+    }
+    //方法功能：教师选班
 
     //方法功能：数据插入和结果处理
     /*
@@ -381,7 +469,7 @@ public class dbOperation {
         try {
             int record = stmt.executeUpdate(sql);
             if (record != 0) {
-                System.out.println("操作成功！");
+                System.out.println("数据库操作成功！");
                 return true;
             } else {
                 System.out.println("数据库未响应，操作失败！");
@@ -435,6 +523,14 @@ public class dbOperation {
             sql_1 = "select class_id from class " +
                     "where class_id = '" + id + "'";
             System.out.println("正在检查课程表：" + sql_1);
+        } else if (table_name.equals("teacher")) {
+            sql_1 = "select teacher_id from teacher " +
+                    "where teacher_id = '" + id + "'";
+            System.out.println("正在检查教师表：" + sql_1);
+        } else if (table_name.equals("course")) {
+            sql_1 = "select course_id from course " +
+                    "where course_id = '" + id + "'";
+            System.out.println("正在检查班级表：" + sql_1);
         } else {
             System.out.println("不存在的表：" + table_name + "！");
             return false;
@@ -453,7 +549,6 @@ public class dbOperation {
         }
     }
 
-    //方法功能：管理员设置专业下对应课程
 
     //方法功能：系统账号注册
     /*

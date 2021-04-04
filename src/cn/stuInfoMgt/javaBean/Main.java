@@ -57,6 +57,12 @@ public class Main {
         student2.setUserId(202104);
         dboperation.update(student2);
 
+        //管理员创建教师信息
+        dboperation.insertTeacher(2, "徐万里", "管理员");
+
+        //管理员创建课程
+        dboperation.insertCourse(1, "Java", 2, 1, "管理员");
+
         //关闭数据库连接
         dboperation.close();
     }
