@@ -49,8 +49,8 @@ public class Main {
         dboperation.insertClass(1, "软件工程");
 
         //插入学生信息，返回值为boolean类型
-        Student student2 = new Student(202103, "钱老板", 22, "男", 1, "无");
-        dboperation.insert(student2);
+        Student student2 = new Student(202103, "钱老板", 22, "男", 1, 1, "无");
+        dboperation.insertStu(student2);
 
         //修改学生信息，返回值为boolean类型
         student2.setUserName("钱天龙");
@@ -63,6 +63,14 @@ public class Main {
         //管理员创建课程
         dboperation.insertCourse(1, "Java", 2, 1, "管理员");
 
+        //学生选课
+        int[] course_id = new int[5];
+        course_id[0] = 1;
+        for (int i = 0; i < 5; i++) {
+            System.out.println(course_id[i]);
+        }
+        dboperation.queryCourse(1);
+        dboperation.chooseCourse(202104, course_id);
         //关闭数据库连接
         dboperation.close();
     }

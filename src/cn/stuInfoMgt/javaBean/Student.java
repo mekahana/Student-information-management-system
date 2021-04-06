@@ -12,7 +12,7 @@ public class Student extends User {
     //班级名称，用于展示学生基本信息
     private String class_name;
     //专业
-    private String major;
+    private int major_id;
     //备注
     private String remakes;
     //学号副本，用于在数据库中，根据原学号来修改学号
@@ -26,13 +26,14 @@ public class Student extends User {
     }
 
     //对应数据库，学生表数据顺序
-    public Student(int userId, String stu_name, int age, String gender, int class_id, String remakes) {
+    public Student(int userId, String stu_name, int age, String gender, int major_id, int class_id, String remakes) {
         super(userId);
         //对象初始化时保持学号副本与学号相同
         this.stu_id_copy = super.getUserId();
         this.setUserName(stu_name);
         this.age = age;
         this.gender = gender;
+        this.major_id = major_id;
         this.class_id = class_id;
         this.remakes = remakes;
     }
@@ -46,12 +47,12 @@ public class Student extends User {
         super.setUserId(userId);
     }
 
-    public String getMajor() {
-        return major;
+    public int getMajor_id() {
+        return major_id;
     }
 
-    public void setMajor(String major) {
-        this.major = major;
+    public void setMajor_id(int major_id) {
+        this.major_id = major_id;
     }
 
     public String getClass_name() {

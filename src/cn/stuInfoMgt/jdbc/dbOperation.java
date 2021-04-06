@@ -2,10 +2,7 @@ package cn.stuInfoMgt.jdbc;
 
 import cn.stuInfoMgt.javaBean.Student;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 
 public class dbOperation {
@@ -45,20 +42,19 @@ public class dbOperation {
                 student.setUserName(rs_1.getString("stu_name"));
                 student.setAge(rs_1.getInt("age"));
                 student.setGender(rs_1.getString("gender"));
+                student.setMajor_id(rs_1.getInt("major_id"));
                 student.setClass_id(rs_1.getInt("class_id"));
                 student.setRemakes(rs_1.getString("remarks"));
             }
             int class_id = student.getClass_id();
             //查询学生班级与专业
             String sql_2 = "select major_name from major " +
-                    "where major_id " +
-                    "=(select major_id from class " +
-                    "where class_id = '" + class_id + "')";
+                    "where major_id = '" + student.getMajor_id() + "'";
             //执行查询
             ResultSet rs_2 = stmt.executeQuery(sql_2);
             while (rs_2.next()) {
-                student.setMajor(rs_2.getString("major_name"));
-                student.setClass_name(student.getMajor() + class_id + "班");
+                String major_name = rs_2.getString("major_name");
+                student.setClass_name(major_name + class_id + "班");
                 System.out.println("查询学生信息成功！");
             }
         } catch (Exception e) {
@@ -76,7 +72,7 @@ public class dbOperation {
 
     错误总结：要先对学生插入的信息进行检查（班级是否已经存在、学号是否重复）
     * */
-    public boolean insert(Student student) {
+    public boolean insertStu(Student student) {
         System.out.println("\n学生信息插入中...");
         //执行学号重复检查
         if (!checkId(student.getUserId(), "student")) {
@@ -85,14 +81,15 @@ public class dbOperation {
             String stu_name = student.getUserName();
             int age = student.getAge();
             String gender = student.getGender();
+            int major_id = student.getMajor_id();
             int class_id = student.getClass_id();
             String remarks = student.getRemakes();
             //插入数据检查（班级必须存在）
             if (checkId(class_id, "class")) {
                 //如果班级存在，这里借用了重复检查方法
                 String sql_2 = "insert into student" +
-                        "(stu_id, stu_name, age, gender, class_id, remarks)values" +
-                        "('" + stu_id + "', '" + stu_name + "', '" + age + "', '" + gender + "', '" + class_id + "', '" + remarks + "')";
+                        "(stu_id, stu_name, age, gender, major_id, class_id, remarks)values" +
+                        "('" + stu_id + "', '" + stu_name + "', '" + age + "', '" + gender + "', '" + major_id + "', '" + class_id + "', '" + remarks + "')";
                 if (commonInsertResult(sql_2)) {
                     System.out.println("插入学生信息成功！");
                     showTable("student");
@@ -125,20 +122,20 @@ public class dbOperation {
         4.表名作为SQL语句变量时不需要使用单引号，只使用双引号即可
     * */
     public void showTable(String table_name) {
-        if (table_name.equals(null)) {
-            table_name = "student";
-        }
         System.out.println(table_name + "表：");
         String sql_1 = "select * from " + table_name;
         //可以使用switch语句，选择不同的SQL语句，查询不同的表
         try {
             ResultSet rs_1 = stmt.executeQuery(sql_1);
+            ResultSetMetaData data = rs_1.getMetaData();
+            //获得一行记录的字段数
+            int columnCount = data.getColumnCount();
             //存储tableLine
             ArrayList<ArrayList<Object>> tableList = new ArrayList<>();
             while (rs_1.next()) {
                 //使用tableLine存储一行数据
                 ArrayList<Object> tableLine = new ArrayList<>();
-                for (int i = 1; i <= 8; i++) {
+                for (int i = 1; i <= columnCount; i++) {
                     tableLine.add(rs_1.getObject(i));
                 }
                 //将存储了一行数据的ArrayList存入
@@ -218,36 +215,7 @@ public class dbOperation {
         }
     }
 
-    //方法功能：学生选专业
-    /*
-    备注：专业中有多门课程，且不存在课程同时属于多个专业
-    * */
-
-    //方法功能：学生选课course
-    /*
-    备注：
-        1.要先进行专业选择
-        2.只能选择本专业下的课程
-        3.
-    * */
-
-    //方法功能：教师打分
-    /*
-    备注：
-        1.一个老师带多个班
-        2.可视界面显示不同课程的班级学生名单，老师为其打分
-    * */
-
-    //方法功能：学生成绩查询
-    /*
-    注意：
-        1.查询成绩需要先登陆账号
-        2.账号为各对象的userId
-        3.注册需要的参数：账号，密码，权限
-    * */
-
     //方法功能：创建学院
-
     /**
      * 备注：
      * 1.只有管理员才可以设置学院
@@ -255,7 +223,7 @@ public class dbOperation {
      */
     public boolean insertCollege(int college_id, String college_name) {
         String table_name = "college";
-        String sql_1 = "insert into college (college_id, college_name) " +
+        String sql_1 = "insertStu into college (college_id, college_name) " +
                 "values('" + college_id + "', '" + college_name + "')";
         //学院创建预设，使用预设的默认值
         System.out.println("\n正在创建学院中...");
@@ -292,7 +260,7 @@ public class dbOperation {
                 //专业id重复检查
                 if (!checkId(major_id, "major")) {
                     //不存在id重复，插入数据
-                    String sql_2 = "insert into major (major_id, major_name, college_id)" +
+                    String sql_2 = "insertStu into major (major_id, major_name, college_id)" +
                             "values('" + major_id + "', '" + major_name + "', '" + college_id + "')";
                     System.out.println("正在插入数据：" + sql_2);
                     if (commonInsertResult(sql_2)) return true;
@@ -339,7 +307,7 @@ public class dbOperation {
                     //专业存在，获取major_id
                     major_id = rs.getInt("major_id");
                     //不存在重复，插入数据
-                    String sql_2 = "insert into class " +
+                    String sql_2 = "insertStu into class " +
                             "(class_id, class_name, major_id)" +
                             "values('" + class_id + "', '" + class_name + "', '" + major_id + "')";
                     System.out.println(sql_2);
@@ -378,7 +346,7 @@ public class dbOperation {
             //检查教师id是否重复
             if (!checkId(teacher_id, "teacher")) {
                 //没有重复
-                String sql_1 = "insert into teacher " +
+                String sql_1 = "insertStu into teacher " +
                         "(teacher_id, teacher_name) " +
                         "values('" + teacher_id + "', '" + teacher_name + "')";
                 if (commonInsertResult(sql_1)) {
@@ -399,8 +367,8 @@ public class dbOperation {
             return false;
         }
     }
-    //方法功能：管理员设置专业对应课程
 
+    //方法功能：管理员设置专业对应课程
     /**
      * 备注：
      * 1.课程是否存在（重复检查）
@@ -423,7 +391,7 @@ public class dbOperation {
                     if (checkId(teacher_id, "teacher")) {
                         //教师存在
                         System.out.println("教师存在！");
-                        String sql_1 = "insert into course " +
+                        String sql_1 = "insertStu into course " +
                                 "(course_id, course_name, teacher_id, major_id) " +
                                 "values('" + course_id + "', '" + course_name + "', '" + teacher_id + "', '" + major_id + "')";
                         if (commonInsertResult(sql_1)) {
@@ -454,7 +422,6 @@ public class dbOperation {
             return false;
         }
     }
-    //方法功能：教师选班
 
     //方法功能：数据插入和结果处理
     /*
@@ -482,11 +449,7 @@ public class dbOperation {
         }
     }
 
-
-    //方法功能：教师选课教授
-
     //方法功能：id重复检查（用于创建、更新数据时的重复检查）
-
     /**
      * 备注：
      * 1.支持专业id重复检查
@@ -549,7 +512,85 @@ public class dbOperation {
         }
     }
 
+    //方法功能：查询本专业下的课程
+    /*
+     * 备注：配合选课使用
+     * */
+    public boolean queryCourse(int major_id) {
+        //查询学生自身专业，查询该专业下课程
+        String sql_1 = "select * from course " +
+                "where major_id='" + major_id + "'";
+        System.out.println("正在查询专业下课程：" + sql_1);
+        try {
+            //输出专业下的课程信息
+            ResultSet rs = stmt.executeQuery(sql_1);
+            ResultSetMetaData data = null;
+            data = rs.getMetaData();
+            //获得一行记录的字段数
+            int columnCount = data.getColumnCount();
+            //用于存储一行记录
+            ArrayList<Object> arrayListRecord = new ArrayList<>();
+            ArrayList<ArrayList<Object>> arrayLists = new ArrayList<>();
+            while (rs.next()) {
+                for (int i = 1; i < columnCount; i++) {
+                    arrayListRecord.add(rs.getObject(i));
+                }
+                arrayLists.add(arrayListRecord);
+            }
+            System.out.println(arrayLists);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
+    //方法功能：学生选课course
+    /*
+    备注：
+        1.要先进行专业选择
+        2.只能选择本专业下的课程
+        3.最多只能选择5门课程
+    * */
+    public boolean chooseCourse(int stu_id, int[] course_id) {
+        System.out.println("正在选课...");
+        System.out.println(course_id[0]);
+        //进行选课
+        String sql_2 = null;
+        for (int i = 0; i < course_id.length; i++) {
+            if (course_id[i] != 0) {
+                sql_2 = "insert into stu_course " +
+                        "(stu_id, course_id) " +
+                        "values('" + stu_id + "', '" + course_id[i] + "')";
+                if (commonInsertResult(sql_2)) {
+                    System.out.println("选课成功！");
+                    return true;
+                } else {
+                    System.out.println("存在已经选择的课程，选课失败！");
+                    return false;
+                }
+            } else {
+                //当遇到课程号为0表示之后都没有数据，直接退出循环
+                break;
+            }
+        }
+        System.out.println("数据库操作出错，选课失败！");
+        return false;
+    }
+
+    //方法功能：教师打分
+    /*
+    备注：
+        1.一个老师带多个班
+        2.可视界面显示不同课程的班级学生名单，老师为其打分
+    * */
+
+    //方法功能：学生成绩查询
+    /*
+    注意：
+        1.查询成绩需要先登陆账号
+        2.账号为各对象的userId
+        3.注册需要的参数：账号，密码，权限
+    * */
     //方法功能：系统账号注册
     /*
     备注：
