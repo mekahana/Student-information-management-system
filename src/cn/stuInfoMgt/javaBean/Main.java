@@ -72,9 +72,10 @@ public class Main {
         dboperation.queryCourse(1);
         dboperation.chooseCourse(202104, course_id);
 
-        //查询教师课程的学生信息
+        //教师查询课程的学生信息
         dboperation.queryStuInCourse(1, 1);
-
+        //教师打分
+        dboperation.insertGrade(202103, 1, 100);
         //关闭数据库连接
         dboperation.close();
     }

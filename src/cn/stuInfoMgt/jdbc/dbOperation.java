@@ -521,7 +521,13 @@ public class dbOperation {
             sql_1 = "select * from stu_course " +
                     "where stu_id= '" + id1 + "' " +
                     "and course_id = '" + id2 + "'";
-            System.out.println("正在检查专业表：" + sql_1);
+            System.out.println("正在检查学生选课表：" + sql_1);
+        } else if (table_name.equals("grade")) {
+            //查询grade表
+            sql_1 = "select * from grade " +
+                    "where stu_id= '" + id1 + "' " +
+                    "and course_id = '" + id2 + "'";
+            System.out.println("正在检查成绩表：" + sql_1);
         } else {
             System.out.println("不存在的表：" + table_name + "！");
             return false;
@@ -615,6 +621,10 @@ public class dbOperation {
     }
 
     //方法功能：教师查询自己课程下的学生信息
+
+    /**
+     * 备注：只有教师或者管理员可以查看
+     */
     public void queryStuInCourse(int teacher_id, int course_id) {
         String sql_1 = "select stu_id, stu_name from student " +
                 "where stu_id = " +
@@ -640,17 +650,28 @@ public class dbOperation {
     备注：
         1.一个老师带多个班
         2.可视界面显示不同课程的班级学生名单，老师为其打分
+    安全性：该课程是否已经被打分
     * */
-    public boolean insertGrade(int stu_id, int course_id, int grade, String rights) {
+    public boolean insertGrade(int stu_id, int course_id, int grade) {
         System.out.println("\n正在打分...");
-        String sql_1 = "insert into grade " +
-                "(stu_id, course_id, grade)" +
-                "values('" + stu_id + "', '" + course_id + "', '" + grade + "')";
-        if (commonInsertResult(sql_1)) {
-            return true;
+        if (!checkId(stu_id, course_id, "grade")) {
+            //没有重复打分
+            String sql_1 = "insert into grade " +
+                    "(stu_id, course_id, grade)" +
+                    "values('" + stu_id + "', '" + course_id + "', '" + grade + "')";
+            if (commonInsertResult(sql_1)) {
+                System.out.println("打分完成！");
+                return true;
+            } else {
+                System.out.println("数据库未响应，打分失败！");
+                return false;
+            }
         } else {
+            //重复打分
+            System.out.println("打分失败，学生成绩已经被录入！");
             return false;
         }
+
     }
     //方法功能：学生成绩查询
     /*
