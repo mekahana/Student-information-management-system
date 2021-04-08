@@ -71,6 +71,10 @@ public class Main {
         }
         dboperation.queryCourse(1);
         dboperation.chooseCourse(202104, course_id);
+
+        //查询教师课程的学生信息
+        dboperation.queryStuInCourse(1, 1);
+
         //关闭数据库连接
         dboperation.close();
     }

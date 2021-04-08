@@ -512,6 +512,34 @@ public class dbOperation {
         }
     }
 
+    //重复查询，针对两个字段为主键的表
+    private boolean checkId(int id1, int id2, String table_name) {
+        System.out.println("正在进行重复检查...");
+        String sql_1 = null;
+        if (table_name.equals("stu_course")) {
+            //查询stu_course表
+            sql_1 = "select * from stu_course " +
+                    "where stu_id= '" + id1 + "' " +
+                    "and course_id = '" + id2 + "'";
+            System.out.println("正在检查专业表：" + sql_1);
+        } else {
+            System.out.println("不存在的表：" + table_name + "！");
+            return false;
+        }
+        try {
+            ResultSet rs = stmt.executeQuery(sql_1);
+            if (rs.next()) {
+                //存在重复
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     //方法功能：查询本专业下的课程
     /*
      * 备注：配合选课使用
@@ -553,7 +581,7 @@ public class dbOperation {
     * */
     public boolean chooseCourse(int stu_id, int[] course_id) {
         System.out.println("正在选课...");
-        System.out.println(course_id[0]);
+        //课程是否已经被选
         //进行选课
         String sql_2 = null;
         for (int i = 0; i < course_id.length; i++) {
@@ -561,13 +589,22 @@ public class dbOperation {
                 sql_2 = "insert into stu_course " +
                         "(stu_id, course_id) " +
                         "values('" + stu_id + "', '" + course_id[i] + "')";
-                if (commonInsertResult(sql_2)) {
-                    System.out.println("选课成功！");
-                    return true;
+                //查询主键是否存在重复
+                if (!checkId(stu_id, course_id[i], "stu_course")) {
+                    //没有重复
+                    if (commonInsertResult(sql_2)) {
+                        System.out.println("选课成功！");
+                        return true;
+                    } else {
+                        System.out.println("存在已经选择的课程，选课失败！");
+                        return false;
+                    }
                 } else {
-                    System.out.println("存在已经选择的课程，选课失败！");
+                    //存在重复
+                    System.out.println("存在已经选择的课程，选课失败");
                     return false;
                 }
+
             } else {
                 //当遇到课程号为0表示之后都没有数据，直接退出循环
                 break;
@@ -577,13 +614,44 @@ public class dbOperation {
         return false;
     }
 
+    //方法功能：教师查询自己课程下的学生信息
+    public void queryStuInCourse(int teacher_id, int course_id) {
+        String sql_1 = "select stu_id, stu_name from student " +
+                "where stu_id = " +
+                "(select stu_id from stu_course " +
+                "where course_id = " +
+                "(select course_id from course " +
+                "where course_id = '" + course_id + "' " +
+                "and teacher_id = '" + teacher_id + "'))";
+        System.out.println("\n教师查询自己某课程下的学生信息：" + sql_1);
+        try {
+            ResultSet rs = stmt.executeQuery(sql_1);
+            System.out.println("教师id：" + teacher_id + "，课程id：" + course_id + "的学生名单：");
+            while (rs.next()) {
+                System.out.println(rs.getInt("stu_id") + "，" + rs.getString("stu_name"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     //方法功能：教师打分
     /*
     备注：
         1.一个老师带多个班
         2.可视界面显示不同课程的班级学生名单，老师为其打分
     * */
-
+    public boolean insertGrade(int stu_id, int course_id, int grade, String rights) {
+        System.out.println("\n正在打分...");
+        String sql_1 = "insert into grade " +
+                "(stu_id, course_id, grade)" +
+                "values('" + stu_id + "', '" + course_id + "', '" + grade + "')";
+        if (commonInsertResult(sql_1)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
     //方法功能：学生成绩查询
     /*
     注意：
@@ -591,6 +659,7 @@ public class dbOperation {
         2.账号为各对象的userId
         3.注册需要的参数：账号，密码，权限
     * */
+
     //方法功能：系统账号注册
     /*
     备注：
