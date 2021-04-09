@@ -18,9 +18,8 @@ public class Main {
         student1.getAll(stuInfo);
 
         //删除学生信息，返回值为boolean类型
-        dboperation.delete(202103);
-        dboperation.delete(0);
-
+        dboperation.deleteStu(202103);
+        dboperation.deleteStu(0);
 
 
         //注册账户，返回值为boolean类型

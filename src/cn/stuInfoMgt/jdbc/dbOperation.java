@@ -149,8 +149,19 @@ public class dbOperation {
     }
 
     //方法功能：按照学号删除指定学生信息
-    public boolean delete(int stu_id) {
+    /*
+     * 备注：
+     *   1.删除成绩表中学生的数据
+     *   2.删除学生选课表中的学生数据
+     *   3.删除学生表中学生数据
+     * */
+    public boolean deleteStu(int stu_id) {
         System.out.println("\n正在删除学号为" + stu_id + "的学生信息...");
+        //删除成绩表中学生的数据
+        deleteStuGrade(stu_id);
+        //删除学生选课表中的学生数据
+        deleteStuCourse(stu_id);
+        //删除学生表中学生数据
         String sql_1 = "delete from student " +
                 "where stu_id = '" + stu_id + "'";
         if (commonInsertResult(sql_1)) {
@@ -161,6 +172,40 @@ public class dbOperation {
         } else {
             //操作失败
             System.out.println("删除失败，学生信息不存在！");
+            return false;
+        }
+    }
+
+    //删除成绩表中学生的信息
+    public boolean deleteStuGrade(int stu_id) {
+        System.out.println("\n正在删除学生成绩...");
+        String sql_1 = "delete from grade " +
+                "where stu_id = '" + stu_id + "'";
+        if (commonInsertResult(sql_1)) {
+            //操作成功
+            System.out.println("学生成绩删除成功！");
+            showTable("student");
+            return true;
+        } else {
+            //操作失败
+            System.out.println("学生成绩不存在！");
+            return false;
+        }
+    }
+
+    //删除学生选课表中的学生信息
+    public boolean deleteStuCourse(int stu_id) {
+        System.out.println("\n正在删除学生选课信息...");
+        String sql_1 = "delete from stu_course " +
+                "where stu_id = '" + stu_id + "'";
+        if (commonInsertResult(sql_1)) {
+            //操作成功
+            System.out.println("学生选课信息删除成功！");
+            showTable("student");
+            return true;
+        } else {
+            //操作失败
+            System.out.println("删除失败，学生选课信息不存在！");
             return false;
         }
     }
@@ -621,7 +666,6 @@ public class dbOperation {
     }
 
     //方法功能：教师查询自己课程下的学生信息
-
     /**
      * 备注：只有教师或者管理员可以查看
      */
